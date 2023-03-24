@@ -28,7 +28,6 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-
   res.render("urls_new");
 });
 
@@ -44,6 +43,11 @@ app.post("/urls/:id/edit", (req, res) => {
 
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
+  res.redirect("/urls");
+});
+
+app.post("/login", (req, res) => {
+  res.cookie('cookieName', Math.floor(Math.random() * 10000), { maxAge: 900000 });
   res.redirect("/urls");
 });
 
