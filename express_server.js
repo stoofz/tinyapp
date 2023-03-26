@@ -38,7 +38,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-
+// Create a new url link
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     username: req.cookies["username"]
@@ -67,6 +67,12 @@ app.post("/urls/:id/delete", (req, res) => {
 // Login a username and create a cookie
 app.post("/login", (req, res) => {
   res.cookie('username', req.body.username, { maxAge: 900000 });
+  res.redirect("/urls");
+});
+
+// Clears cookie, logs out users
+app.post("/logout", (req, res) => {
+  res.clearCookie('username', req.cookies.username);
   res.redirect("/urls");
 });
 
