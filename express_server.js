@@ -76,6 +76,19 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
+// Register user
+app.post("/register", (req, res) => {
+  res.redirect("/urls");
+});
+
+// Register user
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("urls_register", templateVars);
+});
+
 // Display/edit page for url based on short id
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
