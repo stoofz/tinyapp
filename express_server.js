@@ -50,7 +50,6 @@ const findEmailObj = function(email, db) {
   }
 };
 
-
 // Display url database as a json endpoint
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -64,7 +63,6 @@ app.post("/urls", (req, res) => {
 
 // Display url database
 app.get("/urls", (req, res) => {
-
   const templateVars = {
     userObj: findUserObj(Object.keys((req.cookies))[0], users),
     urls: urlDatabase
@@ -107,18 +105,16 @@ app.post("/login", (req, res) => {
   (emailObj.password !== req.body.password) {
     res.status(403).send('Wrong password!');
   } else {
-    res.cookie(emailObj.id, emailObj.email, { maxAge: 900000 });
+    res.cookie(emailObj.id, generateRandomString(), { maxAge: 900000 });
     res.redirect(302, "/urls");
   }
 });
 
 // Login page
 app.get("/login", (req, res) => {
-
   const templateVars = {
     userObj: findUserObj(Object.keys((req.cookies))[0], users)
   };
-
   res.render("urls_login", templateVars);
 });
 
@@ -131,13 +127,10 @@ app.post("/logout", (req, res) => {
 
 // Register user
 app.post("/register", (req, res) => {
-
   if (req.body.email.length === 0 || req.body.password === 0) {
     res.status(400).send('Empty email or password field');
-
   } else if (findEmailObj(req.body.email, users)) {
     res.status(400).send('Email already registerd');
-
   } else {
     const randomUserID = generateRandomString();
     users[randomUserID] = {
@@ -145,7 +138,7 @@ app.post("/register", (req, res) => {
       email: req.body.email,
       password: req.body.password
     };
-    res.cookie(randomUserID, users[randomUserID].email, { maxAge: 900000 });
+    res.cookie(randomUserID, generateRandomString(), { maxAge: 900000 });
     res.redirect(302, "/urls");
   }
 });
