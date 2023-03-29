@@ -32,7 +32,7 @@ const generateRandomString = function() {
   return Math.random().toString(36).slice(2, 8);
 };
 
-// Find userId object from users database
+// Find userId object from userId key
 const findUserObj = function(userId, db) {
   for (const key in db) {
     if (key === userId) {
@@ -41,7 +41,7 @@ const findUserObj = function(userId, db) {
   }
 };
 
-// Find user object from users database via email
+// Find user object from email value
 const findEmailObj = function(email, db) {
   for (const obj of Object.values(db)) {
     if (obj.email === email) {
@@ -107,7 +107,7 @@ app.post("/login", (req, res) => {
   (emailObj.password !== req.body.password) {
     res.status(403).send('Wrong password!');
   } else {
-    res.cookie(emailObj.id, users[emailObj.id], { maxAge: 900000 });
+    res.cookie(emailObj.id, emailObj.email, { maxAge: 900000 });
     res.redirect(302, "/urls");
   }
 });
@@ -145,7 +145,7 @@ app.post("/register", (req, res) => {
       email: req.body.email,
       password: req.body.password
     };
-    res.cookie(randomUserID, users[randomUserID], { maxAge: 900000 });
+    res.cookie(randomUserID, users[randomUserID].email, { maxAge: 900000 });
     res.redirect(302, "/urls");
   }
 });
