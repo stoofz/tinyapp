@@ -22,20 +22,17 @@
 
     <% if(userObj?.email) { %>
       <form class="form-inline justify-content-right" action="/logout" method="post">
-      Logged in as: <%= userObj?.email %>
-      <input type="submit" style="margin: 1em" value="Logout">
+      Logged In As: <%= userObj?.email %>!
+      <input type="submit" class="btn btn-secondary" style="margin: 1em" value="Logout">
       </form>
     <% } else{ %>
       <form class="form-inline justify-content-right" action="/login" method="get">
-        <input type="submit" style="margin: 1em" value="Login">
+        <input type="submit" class="btn btn-secondary" style="margin: 1em" value="Login">
       </form> 
       <form class="form-inline justify-content-right" action="/register" method="get">
-        <input type="submit" style="margin: 1em" value="Register">
+        <input type="submit" class="btn btn-secondary" style="margin: 1em" value="Register">
       </form> 
    <% } %>
-
-  
-
 
   </nav>
 </header>
