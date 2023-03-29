@@ -13,10 +13,34 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// Create initial user accounts
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
 // Generate Random String of 6 capital/lowercase leters and numbers
 const generateRandomString = function() {
   return Math.random().toString(36).slice(2, 8);
 };
+
+// Find userId object from users database
+const findUserObj = function(userId, db) {
+  for (const key in db) {
+    if (key === userId) {
+      return db[key];
+    }
+  }
+};
+
 
 // Display url database as a json endpoint
 app.get("/urls.json", (req, res) => {
@@ -31,8 +55,10 @@ app.post("/urls", (req, res) => {
 
 // Display url database
 app.get("/urls", (req, res) => {
+
   const templateVars = {
-    username: req.cookies["username"],
+    //username: req.cookies["username"],
+    userObj: findUserObj(Object.keys((req.cookies))[0], users),
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
@@ -41,7 +67,8 @@ app.get("/urls", (req, res) => {
 // Create a new url link
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"]
+    //username: req.cookies["username"],
+    userObj: findUserObj(Object.keys((req.cookies))[0], users)
   };
   res.render("urls_new", templateVars);
 });
@@ -78,21 +105,31 @@ app.post("/logout", (req, res) => {
 
 // Register user
 app.post("/register", (req, res) => {
+  const randomUserID = generateRandomString();
+  users[randomUserID] = {
+    id: randomUserID,
+    email: req.body.email,
+    password: req.body.password
+  };
+  res.cookie(randomUserID, users[randomUserID], { maxAge: 900000 });
   res.redirect("/urls");
 });
 
 // Register user
 app.get("/register", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"]
+    //username: req.cookies["username"],
+    userObj: findUserObj(Object.keys((req.cookies))[0], users),
   };
+
   res.render("urls_register", templateVars);
 });
 
 // Display/edit page for url based on short id
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    //username: req.cookies["username"],
+    userObj: findUserObj(Object.keys((req.cookies))[0], users),
     id: req.params.id,
     longURL: urlDatabase[req.params.id]
   };
