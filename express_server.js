@@ -44,6 +44,15 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+// Redirect root route based on login status
+app.get("/", (req, res) => {
+  if (findUserObj(Object.keys((req.cookies))[0], users)) {
+    res.redirect(302, "/urls");
+  } else {
+    res.redirect(302, "/login");
+  }
+});
+
 // Post end point to create a random short url id
 app.post("/urls", (req, res) => {
   urlDatabase[generateRandomString()] = req.body.longURL;
