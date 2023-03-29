@@ -39,11 +39,6 @@ const findEmailObj = function(email, db) {
   }
 };
 
-// Display url database as a json endpoint
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
 // Redirect root route based on login status
 app.get("/", (req, res) => {
   if (findUserObj(Object.keys((req.cookies))[0], users)) {
