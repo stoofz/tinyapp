@@ -59,14 +59,13 @@ app.get("/urls.json", (req, res) => {
 // Post end point to create a random short url id
 app.post("/urls", (req, res) => {
   urlDatabase[generateRandomString()] = req.body.longURL;
-  res.redirect("/urls");
+  res.redirect(302, "/urls");
 });
 
 // Display url database
 app.get("/urls", (req, res) => {
 
   const templateVars = {
-    //username: req.cookies["username"],
     userObj: findUserObj(Object.keys((req.cookies))[0], users),
     urls: urlDatabase
   };
@@ -76,7 +75,6 @@ app.get("/urls", (req, res) => {
 // Create a new url link
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    //username: req.cookies["username"],
     userObj: findUserObj(Object.keys((req.cookies))[0], users)
   };
   res.render("urls_new", templateVars);
@@ -85,29 +83,33 @@ app.get("/urls/new", (req, res) => {
 // Redirect short url to actual url
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  res.redirect(302, longURL);
 });
 
 // Post request to modify url of a short id
 app.post("/urls/:id/edit", (req, res) => {
   urlDatabase[req.params.id] = req.body.newURL;
-  res.redirect("/urls");
+  res.redirect(302, "/urls");
 });
 
 // Post request to delete a short id
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
-  res.redirect("/urls");
+  res.redirect(302, "/urls");
 });
 
 // Login a username and create a cookie
 app.post("/login", (req, res) => {
-  const templateVars = {
-    email: req.body.email,
-    password: req.body.password
-  };
-  res.cookie('username', req.body.username, { maxAge: 900000 });
-  res.redirect("/urls", templateVars);
+  const emailObj = findEmailObj(req.body.email, users);
+  if (!emailObj) {
+    res.status(403).send('Email address not found');
+  } else if
+  (emailObj.password !== req.body.password) {
+    res.status(403).send('Wrong password!');
+  } else {
+    res.cookie(emailObj.id, users[emailObj.id], { maxAge: 900000 });
+    res.redirect(302, "/urls");
+  }
 });
 
 // Login page
@@ -122,8 +124,9 @@ app.get("/login", (req, res) => {
 
 // Clears cookie, logs out users
 app.post("/logout", (req, res) => {
-  res.clearCookie('username', req.cookies.username);
-  res.redirect("/urls");
+  const userId = findUserObj(Object.keys((req.cookies))[0], users);
+  res.clearCookie(userId.id);
+  res.redirect(302, "/login");
 });
 
 // Register user
@@ -143,14 +146,13 @@ app.post("/register", (req, res) => {
       password: req.body.password
     };
     res.cookie(randomUserID, users[randomUserID], { maxAge: 900000 });
-    res.redirect("/urls");
+    res.redirect(302, "/urls");
   }
 });
 
 // Register user
 app.get("/register", (req, res) => {
   const templateVars = {
-    //username: req.cookies["username"],
     userObj: findUserObj(Object.keys((req.cookies))[0], users),
   };
   res.render("urls_register", templateVars);
@@ -159,7 +161,6 @@ app.get("/register", (req, res) => {
 // Display/edit page for url based on short id
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
-    //username: req.cookies["username"],
     userObj: findUserObj(Object.keys((req.cookies))[0], users),
     id: req.params.id,
     longURL: urlDatabase[req.params.id]
