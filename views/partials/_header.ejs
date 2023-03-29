@@ -25,10 +25,12 @@
       Logged in as: <%= userObj?.email %>
       <input type="submit" style="margin: 1em" value="Logout">
       </form>
-    <% } else{ %>  
-      <form class="form-inline justify-content-right" action="/login" method="post">
-        <input type="text" style="width: 200px; margin: 1em" name="username"><br><br>
-        <input type="submit" value="Login">
+    <% } else{ %>
+      <form class="form-inline justify-content-right" action="/login" method="get">
+        <input type="submit" style="margin: 1em" value="Login">
+      </form> 
+      <form class="form-inline justify-content-right" action="/register" method="get">
+        <input type="submit" style="margin: 1em" value="Register">
       </form> 
    <% } %>
 

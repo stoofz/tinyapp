@@ -102,8 +102,22 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Login a username and create a cookie
 app.post("/login", (req, res) => {
+  const templateVars = {
+    email: req.body.email,
+    password: req.body.password
+  };
   res.cookie('username', req.body.username, { maxAge: 900000 });
-  res.redirect("/urls");
+  res.redirect("/urls", templateVars);
+});
+
+// Login page
+app.get("/login", (req, res) => {
+
+  const templateVars = {
+    userObj: findUserObj(Object.keys((req.cookies))[0], users)
+  };
+
+  res.render("urls_login", templateVars);
 });
 
 // Clears cookie, logs out users
@@ -139,7 +153,6 @@ app.get("/register", (req, res) => {
     //username: req.cookies["username"],
     userObj: findUserObj(Object.keys((req.cookies))[0], users),
   };
-
   res.render("urls_register", templateVars);
 });
 
