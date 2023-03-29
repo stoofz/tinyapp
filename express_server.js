@@ -41,6 +41,15 @@ const findUserObj = function(userId, db) {
   }
 };
 
+// Find user object from users database via email
+const findEmailObj = function(email, db) {
+  for (const obj of Object.values(db)) {
+    if (obj.email === email) {
+      return (obj);
+    }
+  }
+};
+
 
 // Display url database as a json endpoint
 app.get("/urls.json", (req, res) => {
@@ -105,14 +114,23 @@ app.post("/logout", (req, res) => {
 
 // Register user
 app.post("/register", (req, res) => {
-  const randomUserID = generateRandomString();
-  users[randomUserID] = {
-    id: randomUserID,
-    email: req.body.email,
-    password: req.body.password
-  };
-  res.cookie(randomUserID, users[randomUserID], { maxAge: 900000 });
-  res.redirect("/urls");
+
+  if (req.body.email.length === 0 || req.body.password === 0) {
+    res.status(400).send('Empty email or password field');
+
+  } else if (findEmailObj(req.body.email, users)) {
+    res.status(400).send('Email already registerd');
+
+  } else {
+    const randomUserID = generateRandomString();
+    users[randomUserID] = {
+      id: randomUserID,
+      email: req.body.email,
+      password: req.body.password
+    };
+    res.cookie(randomUserID, users[randomUserID], { maxAge: 900000 });
+    res.redirect("/urls");
+  }
 });
 
 // Register user
