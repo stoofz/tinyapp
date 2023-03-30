@@ -115,7 +115,7 @@ app.post("/login", (req, res) => {
   } else if (userObj.password !== req.body.password) {
     res.status(403).send('Wrong password!');
   } else {
-    res.cookie(userObj.id, generateRandomString(), { maxAge: 900000 });
+    res.cookie(userObj.id, userObj.email, { maxAge: 900000 });
     res.redirect(302, "/urls");
   }
 });
@@ -152,7 +152,7 @@ app.post("/register", (req, res) => {
       email: req.body.email,
       password: req.body.password
     };
-    res.cookie(randomUserID, generateRandomString(), { maxAge: 900000 });
+    res.cookie(randomUserID, users[randomUserID].email, { maxAge: 900000 });
     res.redirect(302, "/urls");
   }
 });
