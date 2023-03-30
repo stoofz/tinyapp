@@ -50,8 +50,12 @@ app.get("/", (req, res) => {
 
 // Post end point to create a random short url id
 app.post("/urls", (req, res) => {
-  urlDatabase[generateRandomString()] = req.body.longURL;
-  res.redirect(302, "/urls");
+  if (!findUserObj(Object.keys((req.cookies))[0], users)) {
+    res.status(403).send('Must be logged in to create a short URL');
+  } else {
+    urlDatabase[generateRandomString()] = req.body.longURL;
+    res.redirect(302, "/urls");
+  }
 });
 
 // Display url database
@@ -65,16 +69,24 @@ app.get("/urls", (req, res) => {
 
 // Create a new url link
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    userObj: findUserObj(Object.keys((req.cookies))[0], users)
-  };
-  res.render("urls_new", templateVars);
+  if (!findUserObj(Object.keys((req.cookies))[0], users)) {
+    res.redirect(302, "/login");
+  } else {
+    const templateVars = {
+      userObj: findUserObj(Object.keys((req.cookies))[0], users)
+    };
+    res.render("urls_new", templateVars);
+  }
 });
 
 // Redirect short url to actual url
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  res.redirect(302, longURL);
+  if (req.params.id in urlDatabase) {
+    const longURL = urlDatabase[req.params.id];
+    res.redirect(302, longURL);
+  } else {
+    res.status(404).send('Short URL does not exist');
+  }
 });
 
 // Post request to modify url of a short id
@@ -105,10 +117,14 @@ app.post("/login", (req, res) => {
 
 // Login page
 app.get("/login", (req, res) => {
-  const templateVars = {
-    userObj: findUserObj(Object.keys((req.cookies))[0], users)
-  };
-  res.render("urls_login", templateVars);
+  if (findUserObj(Object.keys((req.cookies))[0], users)) {
+    res.redirect(302, "/urls");
+  } else {
+    const templateVars = {
+      userObj: findUserObj(Object.keys((req.cookies))[0], users)
+    };
+    res.render("urls_login", templateVars);
+  }
 });
 
 // Clears cookie, logs out users
@@ -138,10 +154,14 @@ app.post("/register", (req, res) => {
 
 // Register user
 app.get("/register", (req, res) => {
-  const templateVars = {
-    userObj: findUserObj(Object.keys((req.cookies))[0], users),
-  };
-  res.render("urls_register", templateVars);
+  if (findUserObj(Object.keys((req.cookies))[0], users)) {
+    res.redirect(302, "/urls");
+  } else {
+    const templateVars = {
+      userObj: findUserObj(Object.keys((req.cookies))[0], users),
+    };
+    res.render("urls_register", templateVars);
+  }
 });
 
 // Display/edit page for url based on short id
