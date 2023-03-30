@@ -9,8 +9,14 @@ app.use(cookieParser());
 
 // Create initial url db
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userId: "aJ48lw",
+  },
+  "i3BoGr": {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 // Create initial user account db
@@ -103,14 +109,13 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Login a username and create a cookie
 app.post("/login", (req, res) => {
-  const emailObj = findEmailObj(req.body.email, users);
-  if (!emailObj) {
+  const userObj = findEmailObj(req.body.email, users);
+  if (!userObj) {
     res.status(403).send('Email address not found');
-  } else if
-  (emailObj.password !== req.body.password) {
+  } else if (userObj.password !== req.body.password) {
     res.status(403).send('Wrong password!');
   } else {
-    res.cookie(emailObj.id, generateRandomString(), { maxAge: 900000 });
+    res.cookie(userObj.id, generateRandomString(), { maxAge: 900000 });
     res.redirect(302, "/urls");
   }
 });
