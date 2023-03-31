@@ -2,10 +2,12 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 
+const bcrypt = require("bcryptjs");
 const cookieParser = require('cookie-parser');
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 
 // Create initial url db
 const urlDatabase = {};
@@ -35,7 +37,6 @@ const urlsForUser = function(userId, db) {
       userUrls[shortUrl] = db[shortUrl];
     }
   }
-  console.log(userUrls);
   return userUrls;
 };
 
@@ -148,11 +149,11 @@ app.post("/login", (req, res) => {
   const userObj = findEmailObj(req.body.email, users);
   if (!userObj) {
     res.status(401).send('Email address not found');
-  } else if (userObj.password !== req.body.password) {
-    res.status(401).send('Wrong password!');
-  } else {
+  } else if (bcrypt.compareSync(req.body.password, userObj.password)) {
     res.cookie(userObj.id, userObj.email, { maxAge: 900000 });
     res.redirect(302, "/urls");
+  } else {
+    res.status(401).send('Wrong password!');
   }
 });
 
@@ -183,11 +184,12 @@ app.post("/register", (req, res) => {
   } else if (findEmailObj(req.body.email, users)) {
     res.status(400).send('Email already registerd');
   } else {
+    const hashedPassword = bcrypt.hashSync(req.body.password, 10);
     const randomUserID = generateRandomString();
     users[randomUserID] = {
       id: randomUserID,
       email: req.body.email,
-      password: req.body.password
+      password: hashedPassword
     };
     res.cookie(randomUserID, users[randomUserID].email, { maxAge: 900000 });
     res.redirect(302, "/urls");
