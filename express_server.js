@@ -8,16 +8,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Create initial url db
-const urlDatabase = {
-  "b2xVn2": {
-    longURL: "http://www.lighthouselabs.ca",
-    userId: "aJ48lw",
-  },
-  "i3BoGr": {
-    longURL: "https://www.google.ca",
-    userId: "aJ48lW",
-  },
-};
+const urlDatabase = {};
 
 // Create initial user account db
 const users = {};
@@ -119,28 +110,46 @@ app.get("/u/:id", (req, res) => {
 });
 
 // Post request to modify url of a short id
-app.post("/urls/:id/edit", (req, res) => {
-  const userObj = findUserObj(Object.keys((req.cookies))[0], users);
-  urlDatabase[req.params.id] = {
-    longURL: req.body.newURL,
-    userId: userObj.id
-  };
-  res.redirect(302, "/urls");
+app.post("/urls/:id", (req, res) => {
+  const userObj = (findUserObj(Object.keys((req.cookies))[0], users));
+  if (!(req.params.id in urlDatabase)) {
+    res.status(404).send('Short URL id does not exist!');
+  } else if (!userObj) {
+    res.status(401).send('Must be logged in to access this page');
+  } else if (urlDatabase[req.params.id].userId !== userObj.id) {
+    res.status(403).send('Page is only accessible by its owner');
+  } else {
+    const userObj = findUserObj(Object.keys((req.cookies))[0], users);
+    urlDatabase[req.params.id] = {
+      longURL: req.body.newURL,
+      userId: userObj.id
+    };
+    res.redirect(302, "/urls");
+  }
 });
 
 // Post request to delete a short id
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
-  res.redirect(302, "/urls");
+  const userObj = (findUserObj(Object.keys((req.cookies))[0], users));
+  if (!(req.params.id in urlDatabase)) {
+    res.status(404).send('Short URL id does not exist!');
+  } else if (!userObj) {
+    res.status(401).send('Must be logged in to access this page');
+  } else if (urlDatabase[req.params.id].userId !== userObj.id) {
+    res.status(403).send('Page is only accessible by its owner');
+  } else {
+    delete urlDatabase[req.params.id];
+    res.redirect(302, "/urls");
+  }
 });
 
 // Login a username and create a cookie
 app.post("/login", (req, res) => {
   const userObj = findEmailObj(req.body.email, users);
   if (!userObj) {
-    res.status(403).send('Email address not found');
+    res.status(401).send('Email address not found');
   } else if (userObj.password !== req.body.password) {
-    res.status(403).send('Wrong password!');
+    res.status(401).send('Wrong password!');
   } else {
     res.cookie(userObj.id, userObj.email, { maxAge: 900000 });
     res.redirect(302, "/urls");
@@ -200,10 +209,11 @@ app.get("/register", (req, res) => {
 
 // Display/edit page for url based on short id
 app.get("/urls/:id", (req, res) => {
-  console.log(urlDatabase[req.params.id].userId);
   const userObj = (findUserObj(Object.keys((req.cookies))[0], users));
-  if (!userObj) {
-    res.status(400).send('Must be logged in to access this page');
+  if (!(req.params.id in urlDatabase)) {
+    res.status(404).send('Short URL id does not exist!');
+  } else if (!userObj) {
+    res.status(401).send('Must be logged in to access this page');
   } else if (urlDatabase[req.params.id].userId !== userObj.id) {
     res.status(403).send('Page is only accessible by its owner');
   } else {
@@ -220,4 +230,3 @@ app.get("/urls/:id", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
