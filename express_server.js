@@ -61,7 +61,7 @@ app.get("/", (req, res) => {
 app.post("/urls", (req, res) => {
   const userObj = (findUserObj(Object.keys((req.cookies))[0], users));
   if (!userObj) {
-    res.status(403).send('Must be logged in to create a short URL');
+    res.status(401).send('Must be logged in to create a short URL');
   } else {
     urlDatabase[generateRandomString()] = {
       longURL: req.body.longURL,
@@ -75,7 +75,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls", (req, res) => {
   const userObj = (findUserObj(Object.keys((req.cookies))[0], users));
   if (!userObj) {
-    res.status(403).send('Must be logged in view URLs');
+    res.status(401).send('Must be logged in view URLs');
   } else {
     const urlUserDatabase = urlsForUser(userObj.id, urlDatabase);
     const templateVars = {
@@ -117,7 +117,7 @@ app.post("/urls/:id", (req, res) => {
   } else if (!userObj) {
     res.status(401).send('Must be logged in to access this page');
   } else if (urlDatabase[req.params.id].userId !== userObj.id) {
-    res.status(403).send('Page is only accessible by its owner');
+    res.status(401).send('Page is only accessible by its owner');
   } else {
     const userObj = findUserObj(Object.keys((req.cookies))[0], users);
     urlDatabase[req.params.id] = {
@@ -136,7 +136,7 @@ app.post("/urls/:id/delete", (req, res) => {
   } else if (!userObj) {
     res.status(401).send('Must be logged in to access this page');
   } else if (urlDatabase[req.params.id].userId !== userObj.id) {
-    res.status(403).send('Page is only accessible by its owner');
+    res.status(401).send('Page is only accessible by its owner');
   } else {
     delete urlDatabase[req.params.id];
     res.redirect(302, "/urls");
@@ -215,7 +215,7 @@ app.get("/urls/:id", (req, res) => {
   } else if (!userObj) {
     res.status(401).send('Must be logged in to access this page');
   } else if (urlDatabase[req.params.id].userId !== userObj.id) {
-    res.status(403).send('Page is only accessible by its owner');
+    res.status(401).send('Page is only accessible by its owner');
   } else {
     const templateVars = {
       userObj: userObj,
