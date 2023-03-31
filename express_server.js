@@ -15,7 +15,7 @@ const urlDatabase = {
   },
   "i3BoGr": {
     longURL: "https://www.google.ca",
-    userID: "aJ48lW",
+    userId: "aJ48lW",
   },
 };
 
@@ -34,6 +34,18 @@ const findUserObj = function(userId, db) {
       return db[key];
     }
   }
+};
+
+// Find urls belonging to user from url database
+const urlsForUser = function(userId, db) {
+  const userUrls = {};
+  for (const shortUrl in db) {
+    if (userId === db[shortUrl].userId) {
+      userUrls[shortUrl] = db[shortUrl];
+    }
+  }
+  console.log(userUrls);
+  return userUrls;
 };
 
 // Find user object from email value
@@ -56,30 +68,41 @@ app.get("/", (req, res) => {
 
 // Post end point to create a random short url id
 app.post("/urls", (req, res) => {
-  if (!findUserObj(Object.keys((req.cookies))[0], users)) {
+  const userObj = (findUserObj(Object.keys((req.cookies))[0], users));
+  if (!userObj) {
     res.status(403).send('Must be logged in to create a short URL');
   } else {
-    urlDatabase[generateRandomString()] = req.body.longURL;
+    urlDatabase[generateRandomString()] = {
+      longURL: req.body.longURL,
+      userId: userObj.id
+    };
     res.redirect(302, "/urls");
   }
 });
 
-// Display url database
+// Display url database for logged in user
 app.get("/urls", (req, res) => {
-  const templateVars = {
-    userObj: findUserObj(Object.keys((req.cookies))[0], users),
-    urls: urlDatabase
-  };
-  res.render("urls_index", templateVars);
+  const userObj = (findUserObj(Object.keys((req.cookies))[0], users));
+  if (!userObj) {
+    res.status(403).send('Must be logged in view URLs');
+  } else {
+    const urlUserDatabase = urlsForUser(userObj.id, urlDatabase);
+    const templateVars = {
+      userObj: userObj,
+      urls: urlUserDatabase
+    };
+    res.render("urls_index", templateVars);
+  }
 });
 
 // Create a new url link
 app.get("/urls/new", (req, res) => {
-  if (!findUserObj(Object.keys((req.cookies))[0], users)) {
+  const userObj = (findUserObj(Object.keys((req.cookies))[0], users));
+  if (!userObj) {
     res.redirect(302, "/login");
   } else {
     const templateVars = {
-      userObj: findUserObj(Object.keys((req.cookies))[0], users)
+      userObj: userObj
     };
     res.render("urls_new", templateVars);
   }
@@ -88,7 +111,7 @@ app.get("/urls/new", (req, res) => {
 // Redirect short url to actual url
 app.get("/u/:id", (req, res) => {
   if (req.params.id in urlDatabase) {
-    const longURL = urlDatabase[req.params.id];
+    const longURL = urlDatabase[req.params.id].longURL;
     res.redirect(302, longURL);
   } else {
     res.status(404).send('Short URL does not exist');
@@ -97,7 +120,11 @@ app.get("/u/:id", (req, res) => {
 
 // Post request to modify url of a short id
 app.post("/urls/:id/edit", (req, res) => {
-  urlDatabase[req.params.id] = req.body.newURL;
+  const userObj = findUserObj(Object.keys((req.cookies))[0], users);
+  urlDatabase[req.params.id] = {
+    longURL: req.body.newURL,
+    userId: userObj.id
+  };
   res.redirect(302, "/urls");
 });
 
@@ -122,11 +149,12 @@ app.post("/login", (req, res) => {
 
 // Login page
 app.get("/login", (req, res) => {
-  if (findUserObj(Object.keys((req.cookies))[0], users)) {
+  const userObj = findUserObj(Object.keys((req.cookies))[0], users);
+  if (userObj) {
     res.redirect(302, "/urls");
   } else {
     const templateVars = {
-      userObj: findUserObj(Object.keys((req.cookies))[0], users)
+      userObj: userObj
     };
     res.render("urls_login", templateVars);
   }
@@ -134,8 +162,8 @@ app.get("/login", (req, res) => {
 
 // Clears cookie, logs out users
 app.post("/logout", (req, res) => {
-  const userId = findUserObj(Object.keys((req.cookies))[0], users);
-  res.clearCookie(userId.id);
+  const userObj = findUserObj(Object.keys((req.cookies))[0], users);
+  res.clearCookie(userObj.id);
   res.redirect(302, "/login");
 });
 
@@ -159,11 +187,12 @@ app.post("/register", (req, res) => {
 
 // Register user
 app.get("/register", (req, res) => {
-  if (findUserObj(Object.keys((req.cookies))[0], users)) {
+  const userObj = findUserObj(Object.keys((req.cookies))[0], users);
+  if (userObj) {
     res.redirect(302, "/urls");
   } else {
     const templateVars = {
-      userObj: findUserObj(Object.keys((req.cookies))[0], users),
+      userObj: userObj,
     };
     res.render("urls_register", templateVars);
   }
@@ -171,12 +200,20 @@ app.get("/register", (req, res) => {
 
 // Display/edit page for url based on short id
 app.get("/urls/:id", (req, res) => {
-  const templateVars = {
-    userObj: findUserObj(Object.keys((req.cookies))[0], users),
-    id: req.params.id,
-    longURL: urlDatabase[req.params.id]
-  };
-  res.render("urls_show", templateVars);
+  console.log(urlDatabase[req.params.id].userId);
+  const userObj = (findUserObj(Object.keys((req.cookies))[0], users));
+  if (!userObj) {
+    res.status(400).send('Must be logged in to access this page');
+  } else if (urlDatabase[req.params.id].userId !== userObj.id) {
+    res.status(403).send('Page is only accessible by its owner');
+  } else {
+    const templateVars = {
+      userObj: userObj,
+      id: req.params.id,
+      longURL: urlDatabase[req.params.id].longURL
+    };
+    res.render("urls_show", templateVars);
+  }
 });
 
 // Server launched on port/accepting connections
