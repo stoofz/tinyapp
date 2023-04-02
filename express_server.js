@@ -3,10 +3,9 @@ const app = express();
 const PORT = 8080;
 const bcrypt = require("bcryptjs");
 const cookieSession = require('cookie-session');
-const { generateRandomString, userCheck, findUserUrls, findEmailObj } = require('./helpers');
 const methodOverride = require('method-override');
+const { generateRandomString, userCheck, findUserUrls, findEmailObj } = require('./helpers');
 
-app.use(methodOverride('_method'));
 app.use(
   cookieSession({
     name: 'session',
@@ -14,6 +13,8 @@ app.use(
   })
 );
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
+
 app.set("view engine", "ejs");
 
 // Create initial url db
