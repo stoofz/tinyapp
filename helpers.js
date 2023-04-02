@@ -1,4 +1,3 @@
-
 // Generate Random String of 6 capital/lowercase leters and numbers
 const generateRandomString = function() {
   return Math.random().toString(36).slice(2, 8);
