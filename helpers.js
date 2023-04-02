@@ -4,6 +4,17 @@ const generateRandomString = function() {
   return Math.random().toString(36).slice(2, 8);
 };
 
+// Permission check
+const userCheck = function(req, res, db) {
+  if (!(req.params.id in db)) {
+    return res.status(404).send('Short URL id does not exist!');
+  } else if (!req.session.userId) {
+    return res.status(401).send('Must be logged in to access this page');
+  } else if (db[req.params.id].userId !== req.session.userId) {
+    return res.status(401).send('Page is only accessible by its owner');
+  }
+};
+
 // Find urls belonging to user from url database
 const findUserUrls = function(userId, db) {
   const userUrls = {};
@@ -24,4 +35,4 @@ const findEmailObj = function(email, db) {
   }
 };
 
-module.exports = { generateRandomString, findUserUrls, findEmailObj };
+module.exports = { generateRandomString, userCheck, findUserUrls, findEmailObj };
