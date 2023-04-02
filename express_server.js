@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080;
 const bcrypt = require("bcryptjs");
 const cookieSession = require('cookie-session');
+const { generateRandomString, findUserUrls, findEmailObj } = require('./helpers');
 
 app.use(
   cookieSession({
@@ -12,37 +13,12 @@ app.use(
 );
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
-
 // Create initial url db
+
 const urlDatabase = {};
 
 // Create initial user account db
 const users = {};
-
-// Generate Random String of 6 capital/lowercase leters and numbers
-const generateRandomString = function() {
-  return Math.random().toString(36).slice(2, 8);
-};
-
-// Find urls belonging to user from url database
-const urlsForUser = function(userId, db) {
-  const userUrls = {};
-  for (const shortUrl in db) {
-    if (userId === db[shortUrl].userId) {
-      userUrls[shortUrl] = db[shortUrl];
-    }
-  }
-  return userUrls;
-};
-
-// Find user object from email value
-const findEmailObj = function(email, db) {
-  for (const obj of Object.values(db)) {
-    if (obj.email === email) {
-      return (obj);
-    }
-  }
-};
 
 // Redirect root route based on login status
 app.get("/", (req, res) => {
@@ -73,7 +49,7 @@ app.get("/urls", (req, res) => {
   if (!userId) {
     res.status(401).send('Must be logged in to view URLs');
   } else {
-    const urlUserDatabase = urlsForUser(userId, urlDatabase);
+    const urlUserDatabase = findUserUrls(userId, urlDatabase);
     const templateVars = {
       userObj: users[userId],
       urls: urlUserDatabase
