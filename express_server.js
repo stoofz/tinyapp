@@ -4,7 +4,9 @@ const PORT = 8080;
 const bcrypt = require("bcryptjs");
 const cookieSession = require('cookie-session');
 const { generateRandomString, userCheck, findUserUrls, findEmailObj } = require('./helpers');
+const methodOverride = require('method-override');
 
+app.use(methodOverride('_method'));
 app.use(
   cookieSession({
     name: 'session',
@@ -79,7 +81,7 @@ app.get("/u/:id", (req, res) => {
 });
 
 // Post request to modify url of a short id
-app.post("/urls/:id", (req, res) => {
+app.put("/urls/:id", (req, res) => {
   if (userCheck(req, res, urlDatabase)) {
     // empty (for ES-Lint)
   } else {
@@ -92,7 +94,7 @@ app.post("/urls/:id", (req, res) => {
 });
 
 // Post request to delete a short id
-app.post("/urls/:id/delete", (req, res) => {
+app.delete("/urls/:id", (req, res) => {
   if (userCheck(req, res, urlDatabase)) {
     // empty (for ES-Lint)
   } else {
@@ -163,7 +165,7 @@ app.get("/register", (req, res) => {
   }
 });
 
-// Display/edit page for url based on short id
+// Display page for url based on short id
 app.get("/urls/:id", (req, res) => {
   if (userCheck(req, res, urlDatabase)) {
     // empty (for ES-Lint)
