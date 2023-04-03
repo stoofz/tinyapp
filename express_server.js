@@ -4,13 +4,7 @@ const PORT = 8080;
 const bcrypt = require("bcryptjs");
 const cookieSession = require('cookie-session');
 const methodOverride = require('method-override');
-const {
-  generateRandomString,
-  userPermCheck,
-  findUserUrls,
-  findEmailUserObj,
-  validSessionCheck
-} = require('./helpers');
+const { generateRandomString, userPermCheck, findUserUrls, findEmailUserObj, validSessionCheck } = require('./helpers');
 
 app.use(
   cookieSession({

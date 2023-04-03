@@ -39,10 +39,4 @@ const findEmailUserObj = function(email, db) {
   }
 };
 
-module.exports = {
-  generateRandomString,
-  userPermCheck,
-  findUserUrls,
-  findEmailUserObj,
-  validSessionCheck
-};
+module.exports = { generateRandomString, userPermCheck, findUserUrls, findEmailUserObj, validSessionCheck };
