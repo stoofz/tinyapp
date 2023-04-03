@@ -4,7 +4,13 @@ const PORT = 8080;
 const bcrypt = require("bcryptjs");
 const cookieSession = require('cookie-session');
 const methodOverride = require('method-override');
-const { generateRandomString, userCheck, findUserUrls, findEmailObj } = require('./helpers');
+const {
+  generateRandomString,
+  userPermCheck,
+  findUserUrls,
+  findEmailUserObj,
+  validSessionCheck
+} = require('./helpers');
 
 app.use(
   cookieSession({
@@ -25,7 +31,7 @@ const users = {};
 
 // Redirect root route based on login status
 app.get("/", (req, res) => {
-  if (req.session.userId) {
+  if (validSessionCheck(req.session.userId, users)) {
     res.redirect(302, "/urls");
   } else {
     res.redirect(302, "/login");
@@ -34,7 +40,7 @@ app.get("/", (req, res) => {
 
 // Post end point to create a random short url id
 app.post("/urls", (req, res) => {
-  if (!req.session.userId) {
+  if (validSessionCheck(req.session.userId, users) === false) {
     res.status(401).send('Must be logged in to create a short URL');
   } else {
     urlDatabase[generateRandomString()] = {
@@ -47,7 +53,7 @@ app.post("/urls", (req, res) => {
 
 // Display url database for logged in user
 app.get("/urls", (req, res) => {
-  if (!req.session.userId) {
+  if (validSessionCheck(req.session.userId, users) === false) {
     res.status(401).send('Must be logged in to view URLs');
   } else {
     const urlUserDatabase = findUserUrls(req.session.userId, urlDatabase);
@@ -61,7 +67,7 @@ app.get("/urls", (req, res) => {
 
 // Create a new url link
 app.get("/urls/new", (req, res) => {
-  if (!req.session.userId) {
+  if (validSessionCheck(req.session.userId, users) === false) {
     res.redirect(302, "/login");
   } else {
     const templateVars = {
@@ -83,7 +89,7 @@ app.get("/u/:id", (req, res) => {
 
 // Post request to modify url of a short id
 app.put("/urls/:id", (req, res) => {
-  if (userCheck(req, res, urlDatabase)) {
+  if (userPermCheck(req, res, urlDatabase)) {
     // empty (for ES-Lint)
   } else {
     urlDatabase[req.params.id] = {
@@ -96,7 +102,7 @@ app.put("/urls/:id", (req, res) => {
 
 // Post request to delete a short id
 app.delete("/urls/:id", (req, res) => {
-  if (userCheck(req, res, urlDatabase)) {
+  if (userPermCheck(req, res, urlDatabase)) {
     // empty (for ES-Lint)
   } else {
     delete urlDatabase[req.params.id];
@@ -106,7 +112,7 @@ app.delete("/urls/:id", (req, res) => {
 
 // Login a username and create a cookie
 app.post("/login", (req, res) => {
-  const userObj = findEmailObj(req.body.email, users);
+  const userObj = findEmailUserObj(req.body.email, users);
   if (!userObj) {
     res.status(401).send('Email address not found');
   } else if (bcrypt.compareSync(req.body.password, userObj.password)) {
@@ -119,7 +125,7 @@ app.post("/login", (req, res) => {
 
 // Login page
 app.get("/login", (req, res) => {
-  if (req.session.userId) {
+  if (validSessionCheck(req.session.userId, users)) {
     res.redirect(302, "/urls");
   } else {
     const templateVars = {
@@ -139,7 +145,7 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   if (req.body.email.length === 0 || req.body.password === 0) {
     res.status(400).send('Empty email or password field');
-  } else if (findEmailObj(req.body.email, users)) {
+  } else if (findEmailUserObj(req.body.email, users)) {
     res.status(400).send('Email already registerd');
   } else {
     const hashedPassword = bcrypt.hashSync(req.body.password, 10);
@@ -156,7 +162,7 @@ app.post("/register", (req, res) => {
 
 // Register user
 app.get("/register", (req, res) => {
-  if (req.session.userId) {
+  if (validSessionCheck(req.session.userId, users)) {
     res.redirect(302, "/urls");
   } else {
     const templateVars = {
@@ -168,7 +174,7 @@ app.get("/register", (req, res) => {
 
 // Display page for url based on short id
 app.get("/urls/:id", (req, res) => {
-  if (userCheck(req, res, urlDatabase)) {
+  if (userPermCheck(req, res, urlDatabase)) {
     // empty (for ES-Lint)
   } else {
     const templateVars = {

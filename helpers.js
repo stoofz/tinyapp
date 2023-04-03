@@ -3,8 +3,13 @@ const generateRandomString = function() {
   return Math.random().toString(36).slice(2, 8);
 };
 
+// Check if Session is valid (in case of orphaned/lost session in client on server restart)
+const validSessionCheck = function(userId, db) {
+  return userId in db;
+};
+
 // Permission check
-const userCheck = function(req, res, db) {
+const userPermCheck = function(req, res, db) {
   if (!(req.params.id in db)) {
     return res.status(404).send('Short URL id does not exist!');
   } else if (!req.session.userId) {
@@ -26,7 +31,7 @@ const findUserUrls = function(userId, db) {
 };
 
 // Find user object from email value
-const findEmailObj = function(email, db) {
+const findEmailUserObj = function(email, db) {
   for (const obj of Object.values(db)) {
     if (obj.email === email) {
       return (obj);
@@ -34,4 +39,4 @@ const findEmailObj = function(email, db) {
   }
 };
 
-module.exports = { generateRandomString, userCheck, findUserUrls, findEmailObj };
+module.exports = { generateRandomString, userPermCheck, findUserUrls, findEmailUserObj, validSessionCheck };
