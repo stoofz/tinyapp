@@ -3,7 +3,7 @@ const generateRandomString = function() {
   return Math.random().toString(36).slice(2, 8);
 };
 
-// Check if Session is valid (in case of orphaned/lost session in client on server restart)
+// Check if Session is valid (ie. orphaned session in client on server restart)
 const validSessionCheck = function(userId, db) {
   return userId in db;
 };
@@ -39,4 +39,10 @@ const findEmailUserObj = function(email, db) {
   }
 };
 
-module.exports = { generateRandomString, userPermCheck, findUserUrls, findEmailUserObj, validSessionCheck };
+module.exports = {
+  generateRandomString,
+  userPermCheck,
+  findUserUrls,
+  findEmailUserObj,
+  validSessionCheck
+};
