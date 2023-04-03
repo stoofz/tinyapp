@@ -137,7 +137,7 @@ app.post("/logout", (req, res) => {
 
 // Register user
 app.post("/register", (req, res) => {
-  if (req.body.email.length === 0 || req.body.password === 0) {
+  if (!req.body.email.length || !req.body.password) {
     res.status(400).send('Empty email or password field');
   } else if (findEmailUserObj(req.body.email, users)) {
     res.status(400).send('Email already registerd');
