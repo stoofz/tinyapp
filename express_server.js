@@ -37,11 +37,12 @@ app.post("/urls", (req, res) => {
   if (validSessionCheck(req.session.userId, users) === false) {
     res.status(401).send('Must be logged in to create a short URL');
   } else {
-    urlDatabase[generateRandomString()] = {
+    const randString = generateRandomString();
+    urlDatabase[randString] = {
       longURL: req.body.longURL,
       userId: req.session.userId
     };
-    res.redirect(302, "/urls");
+    res.redirect(302, `/urls/${randString}`);
   }
 });
 
